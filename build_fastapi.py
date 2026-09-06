@@ -1,4 +1,4 @@
-from build_fastapi import FastAPI, Request, HTTPException, Response, status
+from fastapi import FastAPI, Request, HTTPException, Response, status
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 import mlflow.pyfunc
