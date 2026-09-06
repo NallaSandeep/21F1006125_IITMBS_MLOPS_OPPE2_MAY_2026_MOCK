@@ -1,10 +1,10 @@
 import mlflow
 
-mlflow.set_tracking_uri("http://35.202.51.100:8100")
+from commons import MLFLOW_TRACKING_URI, MODEL_PATH, MODEL_URI
 
-model_uri = "models:/Oppe2MockDecisionTree/latest"
+mlflow.set_tracking_uri(MLFLOW_TRACKING_URI)
 
 mlflow.artifacts.download_artifacts(
-    artifact_uri=model_uri,
-    dst_path="/app/model"
+    artifact_uri=MODEL_URI,
+    dst_path=MODEL_PATH,
 )

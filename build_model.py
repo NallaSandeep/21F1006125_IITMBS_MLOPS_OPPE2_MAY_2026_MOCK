@@ -1,5 +1,4 @@
 import os
-import joblib
 import pandas as pd
 import mlflow
 from mlflow import MlflowClient
@@ -14,6 +13,14 @@ from sklearn.metrics import (
 from sklearn.model_selection import train_test_split
 from sklearn.tree import DecisionTreeClassifier
 
+from commons import (
+    DATA_PATH,
+    FEATURE_COLUMNS,
+    MLFLOW_TRACKING_URI,
+    MODEL_NAME,
+    TARGET_COLUMN,
+)
+
 def load_data(path):
     return pd.read_csv(path)
 
@@ -22,25 +29,21 @@ def split_data(data):
     train, test = train_test_split(
         data,
         test_size=0.4,
-        stratify=data["species"],
+        stratify=data[TARGET_COLUMN],
         random_state=42,
     )
 
-    X_train = train[
-        ["sepal_length", "sepal_width", "petal_length", "petal_width"]
-    ]
-    y_train = train["species"]
+    X_train = train[list(FEATURE_COLUMNS)]
+    y_train = train[TARGET_COLUMN]
 
-    X_test = test[
-        ["sepal_length", "sepal_width", "petal_length", "petal_width"]
-    ]
-    y_test = test["species"]
+    X_test = test[list(FEATURE_COLUMNS)]
+    y_test = test[TARGET_COLUMN]
 
     return X_train, X_test, y_train, y_test
 
 
 def train_model_log_mlflow(X_train, y_train, X_test, y_test):
-    mlflow.set_tracking_uri("http://35.202.51.100:8100")
+    mlflow.set_tracking_uri(MLFLOW_TRACKING_URI)
     client = MlflowClient()
     mlflow.set_experiment("oppe2_mock")
     
@@ -68,7 +71,7 @@ def train_model_log_mlflow(X_train, y_train, X_test, y_test):
         mlflow.sklearn.log_model(
             sk_model=model,
             name="decision_tree_model",
-            registered_model_name="Oppe2MockDecisionTree",
+            registered_model_name=MODEL_NAME,
             input_example=X_test[:5],
             signature=infer_signature(X_test, predictions),
         )
@@ -78,7 +81,7 @@ def train_model_log_mlflow(X_train, y_train, X_test, y_test):
 
 
 def main():
-    data = load_data("./data/iris.csv")
+    data = load_data(DATA_PATH)
 
     X_train, X_test, y_train, y_test = split_data(data)
 

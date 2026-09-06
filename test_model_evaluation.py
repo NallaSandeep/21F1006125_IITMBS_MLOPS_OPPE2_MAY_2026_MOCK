@@ -13,9 +13,9 @@ from build_model import (
 import mlflow
 import mlflow.sklearn
 
-mlflow.set_tracking_uri("http://35.202.51.100:8100")
+from commons import DATA_PATH, MLFLOW_TRACKING_URI, MODEL_URI
 
-DATA_PATH = "./data/iris.csv"
+mlflow.set_tracking_uri(MLFLOW_TRACKING_URI)
 
 
 def get_trained_model():
@@ -25,7 +25,7 @@ def get_trained_model():
     X_train, X_test, y_train, y_test = split_data(data)
 
     loaded_model = mlflow.sklearn.load_model(
-        model_uri="models:/Oppe2MockDecisionTree/latest"
+        model_uri=MODEL_URI
     )
 
     return loaded_model, X_test, y_test

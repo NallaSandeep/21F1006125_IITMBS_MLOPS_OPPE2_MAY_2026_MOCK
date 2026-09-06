@@ -2,29 +2,14 @@ import pandas as pd
 
 from build_model import load_data, split_data
 
-DATA_PATH = "./data/iris.csv"
-
-EXPECTED_COLUMNS = [
-    "sepal_length",
-    "sepal_width",
-    "petal_length",
-    "petal_width",
-    "species",
-]
-
-NUMERIC_COLUMNS = [
-    "sepal_length",
-    "sepal_width",
-    "petal_length",
-    "petal_width",
-]
+from commons import DATA_PATH, EXPECTED_COLUMNS, FEATURE_COLUMNS, TARGET_COLUMN
 
 
 def test_expected_schema():
     """Verify the dataset contains the expected columns."""
     data = load_data(DATA_PATH)
 
-    assert list(data.columns) == EXPECTED_COLUMNS
+    assert list(data.columns) == list(EXPECTED_COLUMNS)
 
 
 def test_no_missing_values():
@@ -38,10 +23,10 @@ def test_feature_data_types():
     """Verify feature columns are numeric."""
     data = load_data(DATA_PATH)
 
-    for column in NUMERIC_COLUMNS:
+    for column in FEATURE_COLUMNS:
         assert pd.api.types.is_numeric_dtype(data[column])
 
-    assert pd.api.types.is_string_dtype(data["species"])
+    assert pd.api.types.is_string_dtype(data[TARGET_COLUMN])
 
 
 def test_target_classes():
@@ -54,7 +39,7 @@ def test_target_classes():
         "virginica",
     }
 
-    assert set(data["species"].unique()) == expected_classes
+    assert set(data[TARGET_COLUMN].unique()) == expected_classes
 
 
 def test_feature_ranges():

@@ -4,11 +4,8 @@ fairlearn
 shap
 matplotlib
 evidently
-joblib
 pytest
 mlflow
-dvc
-dvc-gs
 fastapi
 uvicorn
 opentelemetry-exporter-gcp-trace

@@ -1,5 +1,9 @@
 # 21F1006125_IITMBS_MLOPS_OPPE2_MAY_2026_MOCK
 
+## setup python
+* Run 'python3 -m venv .env'
+* Run 'source .env/bin/activate'
+* Run 'pip install -r requirements.txt'
 
 ## Setup Kubernetes
 * Create a cluster with default settings -> Takes about 5 min

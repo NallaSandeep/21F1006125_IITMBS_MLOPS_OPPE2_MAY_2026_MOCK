@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Request, HTTPException, Response, status
+from build_fastapi import FastAPI, Request, HTTPException, Response, status
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 import mlflow.pyfunc
@@ -16,7 +16,7 @@ from opentelemetry.sdk.trace.export import BatchSpanProcessor
 from opentelemetry.exporter.cloud_trace import CloudTraceSpanExporter
 from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
 
-MODEL_PATH = "/app/model"
+from commons import MODEL_PATH
 
 app_state = {
     "is_ready": False,
