@@ -46,6 +46,9 @@ jobs:
           pip install -r requirements.txt
           pip install pytest pytest-json-report
 
+      - name: Build and Register Model
+        run: python build_model.py
+
       - name: Set up CML
         uses: iterative/setup-cml@v2
 
