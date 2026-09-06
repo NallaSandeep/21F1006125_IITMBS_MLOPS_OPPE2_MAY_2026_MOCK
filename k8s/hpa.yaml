@@ -3,7 +3,7 @@ kind: HorizontalPodAutoscaler
 metadata:
   name: oppe2-mock-hpa
 spec:
-  minReplicas: 0
+  minReplicas: 1
   maxReplicas: 3
   metrics:
   - type: Resource
