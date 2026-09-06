@@ -14,7 +14,7 @@ env:
   PROJECT_ID: project-eada5958-ab21-4f76-b53
   REGION: us-central1
   GAR_REPOSITORY: docker-images-repo
-  IMAGE_NAME: oppe2_mock
+  IMAGE_NAME: oppe2-mock
   GKE_CLUSTER: oppe2-mock
   GKE_LOCATION: us-central1
 
@@ -133,12 +133,12 @@ jobs:
 
       - name: Deploy to GKE
         run: |
-          kubectl set image deployment/oppe2_mock \
-            oppe2_mock=${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.GAR_REPOSITORY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
+          kubectl set image deployment/oppe2-mock \
+            oppe2-mock=${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.GAR_REPOSITORY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
 
       - name: Wait for Rollout
         run: |
-          kubectl rollout status deployment/oppe2_mock --timeout=300s
+          kubectl rollout status deployment/oppe2-mock --timeout=300s
 
       - name: Install wrk
         run: |
