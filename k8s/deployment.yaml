@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: oppe2_mock
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: oppe2_mock
+  template:
+    metadata:
+      labels:
+        app: oppe2_mock
+    spec:
+      serviceAccountName: oppe2_mock
+      containers:
+      - name: oppe2_mock
+        image: us-central1-docker.pkg.dev/project-eada5958-ab21-4f76-b53/docker-images-repo/oppe2_mock:latest
+        ports:
+        - containerPort: 8200
+        startupProbe:
+          httpGet:
+            path: /live_check
+            port: 8200
+          periodSeconds: 15
+        readinessProbe:
+          httpGet:
+            path: /ready_check
+            port: 8200
+          initialDelaySeconds: 30
+          periodSeconds: 30
+        livenessProbe:
+          httpGet:
+            path: /live_check
+            port: 8200
+          initialDelaySeconds: 45
+          periodSeconds: 30
+        resources:
+          requests:
+            cpu: "1000m"
+            memory: "1Gi"
+          limits:
+            cpu: "5000m"
+            memory: "2Gi"

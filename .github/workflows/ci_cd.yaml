@@ -1,0 +1,174 @@
+name: OPPE 2 mock
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+  id-token: write
+  pull-requests: write
+
+env:
+  PROJECT_ID: project-eada5958-ab21-4f76-b53
+  REGION: us-central1
+  GAR_REPOSITORY: docker-images-repo
+  IMAGE_NAME: oppe2_mock
+  GKE_CLUSTER: oppe2-mock
+  GKE_LOCATION: us-central1
+
+jobs:
+  ci-cd:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - id: auth
+        name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.GCP_WORKLOAD_PROVIDER }}
+          service_account: ${{ secrets.GCP_SERVICE_ACCOUNT }}
+
+      - name: Set up Google Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Install Python Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pytest pytest-json-report
+
+      - name: Set up CML
+        uses: iterative/setup-cml@v2
+
+      - name: Verify GCP Authentication
+        run: |
+          gcloud auth list
+
+      - name: Run Unit Tests
+        timeout-minutes: 3
+        run: |
+          pytest -v --json-report --json-report-file=test-report.json
+          cat test-report.json
+
+      - name: Evaluate Model
+        run: |
+          python evaluate.py > metrics.txt
+
+      - name: Generate Report
+        if: always()
+        run: |
+          echo "# CI Test Report" > report.md
+          echo "" >> report.md
+          echo "## Test Results" >> report.md
+
+          python <<EOF >> report.md
+          import json
+
+          with open("test-report.json") as f:
+              report = json.load(f)
+
+          summary = report["summary"]
+
+          print(f"- Passed: {summary.get('passed', 0)}")
+          print(f"- Failed: {summary.get('failed', 0)}")
+          print(f"- Errors: {summary.get('error', 0)}")
+          print(f"- Skipped: {summary.get('skipped', 0)}")
+          EOF
+
+          echo "" >> report.md
+          echo "## Model Evaluation Metrics" >> report.md
+          cat metrics.txt >> report.md
+
+      - name: Publish CML Report
+        env:
+          REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          cml comment create report.md
+
+      ####################################################
+      # Build & Push Docker Image
+      ####################################################
+
+      - name: Configure Docker Authentication
+        run: |
+          gcloud auth configure-docker ${{ env.REGION }}-docker.pkg.dev --quiet
+
+      - name: Build Docker Image
+        run: |
+          docker build \
+            -t ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.GAR_REPOSITORY }}/${{ env.IMAGE_NAME }}:${{ github.sha }} \
+            .
+
+      - name: Push Docker Image
+        run: |
+          docker push \
+            ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.GAR_REPOSITORY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
+
+      ####################################################
+      # Deploy to GKE
+      ####################################################
+            
+      - name: Get GKE Credentials
+        uses: google-github-actions/get-gke-credentials@v2
+        with:
+          cluster_name: ${{ env.GKE_CLUSTER }}
+          location: ${{ env.GKE_LOCATION }}
+          project_id: ${{ env.PROJECT_ID }}
+
+      - name: Deploy manifests
+        run: kubectl apply -f k8s/
+
+      - name: Deploy to GKE
+        run: |
+          kubectl set image deployment/iris-prediction-service \
+            iris-prediction-service=${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.GAR_REPOSITORY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
+
+      - name: Wait for Rollout
+        run: |
+          kubectl rollout status deployment/iris-prediction-service --timeout=300s
+
+      - name: Install wrk
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y wrk
+
+      - name: Create wrk script
+        run: |
+          cat <<'EOF' > stress-test.lua
+          wrk.method = "POST"
+
+          wrk.body = [[
+          {
+            "sepal_length": 5.1,
+            "sepal_width": 3.5,
+            "petal_length": 1.4,
+            "petal_width": 0.2
+          }
+          ]]
+
+          wrk.headers["Content-Type"] = "application/json"
+          EOF
+
+      - name: Run load test
+        run: |
+          wrk \
+            -t4 \
+            -c50 \
+            -d30s \
+            -s stress-test.lua \
+            http://34.63.25.44:80/predict
+
+      - name: Verify Deployment
+        run: |
+          kubectl get deployments
+          kubectl get pods
+          kubectl get services
