@@ -5,7 +5,7 @@ from sklearn.metrics import (
     f1_score,
 )
 
-from graded_assignment import (
+from build_model import (
     load_data,
     split_data,
 )

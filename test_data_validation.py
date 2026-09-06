@@ -1,6 +1,6 @@
 import pandas as pd
 
-from graded_assignment import load_data, split_data
+from build_model import load_data, split_data
 
 DATA_PATH = "./data/iris.csv"
 
