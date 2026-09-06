@@ -15,4 +15,14 @@ FEATURE_COLUMNS = (
 )
 TARGET_COLUMN = "species"
 EXPECTED_COLUMNS = (*FEATURE_COLUMNS, TARGET_COLUMN)
+TARGET_CLASSES = frozenset({"setosa", "versicolor", "virginica"})
 
+DEFAULT_RANDOM_STATE = 42
+DEFAULT_TEST_SIZE = 0.4
+DECISION_TREE_MAX_DEPTH = 3
+FEATURE_RANGES = {
+    "sepal_length": (4.0, 8.0),
+    "sepal_width": (2.0, 5.0),
+    "petal_length": (1.0, 7.0),
+    "petal_width": (0.0, 3.0),
+}
