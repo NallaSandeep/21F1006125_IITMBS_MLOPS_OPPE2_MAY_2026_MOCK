@@ -92,11 +92,11 @@ jobs:
           echo "## Model Evaluation Metrics" >> report.md
           cat metrics.txt >> report.md
 
-      - name: Publish CML Report
-        env:
-          REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          cml comment create report.md
+      # - name: Publish CML Report
+      #   env:
+      #     REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      #   run: |
+      #     cml comment create report.md
 
       ####################################################
       # Build & Push Docker Image
@@ -133,12 +133,12 @@ jobs:
 
       - name: Deploy to GKE
         run: |
-          kubectl set image deployment/iris-prediction-service \
-            iris-prediction-service=${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.GAR_REPOSITORY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
+          kubectl set image deployment/oppe2_mock \
+            oppe2_mock=${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.GAR_REPOSITORY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
 
       - name: Wait for Rollout
         run: |
-          kubectl rollout status deployment/iris-prediction-service --timeout=300s
+          kubectl rollout status deployment/oppe2_mock --timeout=300s
 
       - name: Install wrk
         run: |
@@ -169,7 +169,7 @@ jobs:
             -c50 \
             -d30s \
             -s stress-test.lua \
-            http://34.63.25.44:80/predict
+            http://34.172.240.72:80/predict
 
       - name: Verify Deployment
         run: |
