@@ -11,4 +11,4 @@ RUN python download_best_model.py
 
 EXPOSE 8200
 
-CMD ["uvicorn", "build_model:app", "--host", "0.0.0.0", "--port", "8200"]
+CMD ["uvicorn", "build_fastapi:app", "--host", "0.0.0.0", "--port", "8200"]
