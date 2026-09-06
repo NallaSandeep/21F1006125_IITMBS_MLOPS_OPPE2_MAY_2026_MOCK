@@ -27,3 +27,24 @@
 * To reattach to previous screen, use 'screen -R mlflow_experiment)
 * Create a firewall rule to allow mlflow instance (External IP address of VPC instance, port: 8100)
 * Get the external IP address of the VM instance and access the IP (Say 35.202.51.100:8100) -> MLFlow UI page displays
+
+## Stress testing commands
+* Install wrk library
+```sudo apt-get install -y wrk```
+* Create a lua file (Say with file name - stress-test.lua)
+```
+wrk.method = "POST"
+
+wrk.body = [[
+{
+  "sepal_length": 5.1,
+  "sepal_width": 3.5,
+  "petal_length": 1.4,
+  "petal_width": 0.2
+}
+]]
+
+wrk.headers["Content-Type"] = "application/json"
+```
+* Run the following command
+```wrk -t4 -c1000 -d30s  -s stress-test.lua http://34.172.240.72:80/predict```
